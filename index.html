@@ -1,0 +1,3135 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GEO-AIYLRF | Geo-AI Yield Loss Risk Forecasting</title>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-glass: rgba(255, 255, 255, 0.88);
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --accent-navy: #002b49;
+      --accent-navy-light: #0d4a75;
+      --accent-blue: #0284c7;
+      --accent-blue-subtle: #e0f2fe;
+      --border: #e2e8f0;
+      --border-focus: #0284c7;
+      --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+      --card-shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+      --radius: 10px;
+      --radius-sm: 6px;
+      --header-h: 70px;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Risk Palette */
+      --risk-very-low: #10b981;
+      --risk-low: #84cc16;
+      --risk-mod: #f59e0b;
+      --risk-high: #f97316;
+      --risk-very-high: #ef4444;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0a0f1d;
+      --bg-secondary: #111827;
+      --bg-card: #162032;
+      --bg-glass: rgba(22, 32, 50, 0.92);
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-navy: #38bdf8;
+      --accent-navy-light: #60a5fa;
+      --accent-blue: #38bdf8;
+      --accent-blue-subtle: #0c2847;
+      --border: #1e293b;
+      --border-focus: #38bdf8;
+      --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --card-shadow-hover: 0 4px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.55;
+      font-size: 14.5px;
+      overflow-x: hidden;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Sticky Header */
+    header.sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      height: var(--header-h);
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      transition: all 0.25s ease;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      text-decoration: none;
+      color: inherit;
+    }
+    .brand-group:hover {
+      text-decoration: none;
+    }
+
+    .logo-mark {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #002b49 0%, #0284c7 100%);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      box-shadow: 0 2px 5px rgba(2, 132, 199, 0.3);
+      flex-shrink: 0;
+    }
+    .logo-mark svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+    .brand-title {
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .brand-subtitle {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    nav.header-nav {
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
+    }
+    .nav-link {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      padding: 0.4rem 0.5rem;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+    }
+    .nav-link:hover, .nav-link.active {
+      color: var(--accent-blue);
+      background: var(--bg-secondary);
+      text-decoration: none;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* EU Flag Badge */
+    .eu-funding-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.35rem 0.75rem;
+      background: #00339912;
+      border: 1px solid #00339933;
+      border-radius: var(--radius-sm);
+      font-size: 0.73rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+    [data-theme="dark"] .eu-funding-badge {
+      background: rgba(0, 51, 153, 0.3);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+    .eu-flag-icon {
+      width: 24px;
+      height: 16px;
+      background-color: #003399;
+      border-radius: 2px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+    .eu-stars-circle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1.5px dotted #ffcc00;
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .theme-toggle:hover {
+      color: var(--text-primary);
+      border-color: var(--border-focus);
+    }
+
+    /* Mobile Menu Toggle */
+    .mobile-nav-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.2rem;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      position: relative;
+      min-height: 520px;
+      display: flex;
+      align-items: center;
+      background: linear-gradient(135deg, rgba(0, 43, 73, 0.95) 0%, rgba(13, 74, 117, 0.88) 100%), 
+                  url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: cover;
+      color: #ffffff;
+      padding: 3.5rem 2rem;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .hero-container {
+      max-width: 1360px;
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 3rem;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-left {
+      max-width: 680px;
+    }
+    .eyebrow-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.3rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #38bdf8;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 8px #38bdf8;
+      animation: pulseAnim 2s infinite;
+    }
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.4); }
+    }
+
+    .hero-title {
+      font-size: clamp(2.3rem, 4.5vw, 3.4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    .hero-title span {
+      background: linear-gradient(90deg, #38bdf8, #86efac);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 1.12rem;
+      color: #e2e8f0;
+      line-height: 1.55;
+      margin-bottom: 1.6rem;
+      font-weight: 400;
+    }
+
+    .hero-meta-line {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      font-size: 0.83rem;
+      color: #cbd5e1;
+      margin-bottom: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .hero-meta-line strong {
+      color: #ffffff;
+    }
+    .hero-author-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center 20%;
+      border: 1.5px solid #38bdf8;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+    }
+    .meta-separator {
+      color: #64748b;
+    }
+
+    .hero-cta-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.4rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid transparent;
+      text-decoration: none;
+    }
+    .btn:hover {
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+    .btn-primary {
+      background: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+    }
+    .btn-primary:hover {
+      background: #0369a1;
+      box-shadow: 0 6px 18px rgba(2, 132, 199, 0.5);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      backdrop-filter: blur(8px);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Hero Right: Translucent Risk Map Artwork */
+    .hero-right {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-map-card {
+      position: relative;
+      width: 100%;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 14px;
+      padding: 0.85rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+    }
+    .hero-real-map-container {
+      position: relative;
+      width: 100%;
+      height: 310px;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: #020617;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .hero-real-map-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      border-radius: 9px;
+      transition: transform 0.4s ease;
+      display: block;
+    }
+    .hero-real-map-container:hover .hero-real-map-img {
+      transform: scale(1.03);
+    }
+    .hero-map-live-badge {
+      position: absolute;
+      top: 0.85rem;
+      left: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #f8fafc;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      z-index: 2;
+    }
+    .hero-map-hint {
+      position: absolute;
+      bottom: 0.85rem;
+      right: 0.85rem;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.35rem 0.7rem;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      z-index: 2;
+      transition: all 0.2s;
+    }
+    .hero-real-map-container:hover .hero-map-hint {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #38bdf8;
+    }
+    .floating-legend-box {
+      position: absolute;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      background: rgba(10, 15, 29, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 8px;
+      padding: 0.65rem 0.9rem;
+      font-size: 0.72rem;
+      color: #f8fafc;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      z-index: 5;
+    }
+    .legend-title {
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .legend-gradient-bar {
+      height: 8px;
+      width: 150px;
+      border-radius: 4px;
+      background: linear-gradient(to right, var(--risk-very-low), var(--risk-low), var(--risk-mod), var(--risk-high), var(--risk-very-high));
+      margin-bottom: 0.3rem;
+    }
+    .legend-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: #94a3b8;
+      font-family: var(--font-mono);
+    }
+
+    /* Quick-Facts Strip */
+    .quick-facts-strip {
+      max-width: 1360px;
+      margin: -2.2rem auto 2.5rem auto;
+      padding: 0 2rem;
+      position: relative;
+      z-index: 10;
+    }
+    .facts-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.1rem;
+    }
+    .fact-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .fact-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, #0284c7, #38bdf8);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .fact-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--card-shadow-hover);
+      border-color: var(--accent-blue);
+    }
+    .fact-card:hover::before {
+      opacity: 1;
+    }
+
+    .fact-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+    }
+    .fact-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background: var(--accent-blue-subtle);
+      color: var(--accent-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .fact-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+    .fact-main {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+      line-height: 1.3;
+    }
+    .fact-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    /* Section Styling */
+    section.page-section {
+      max-width: 1360px;
+      margin: 0 auto 3.5rem auto;
+      padding: 0 2rem;
+    }
+    .section-header-block {
+      margin-bottom: 1.6rem;
+    }
+    .section-eyebrow {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-blue);
+      margin-bottom: 0.3rem;
+    }
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+    .section-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      max-width: 750px;
+      margin-top: 0.25rem;
+    }
+
+    /* 3-Column Interactive Map Section */
+    .map-dashboard-grid {
+      display: grid;
+      grid-template-columns: 290px 1fr 340px;
+      gap: 1.25rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--card-shadow);
+    }
+
+    /* Left Panel: Map Layers */
+    .map-controls-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+      border-right: 1px solid var(--border);
+      padding-right: 1.2rem;
+    }
+    .panel-block-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .layer-radio-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .layer-option-label {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.45rem 0.6rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .layer-option-label:hover {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+    .layer-option-label input[type="radio"] {
+      accent-color: #0284c7;
+      cursor: pointer;
+    }
+    .layer-badge-tag {
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      padding: 0.1rem 0.35rem;
+      background: var(--bg-secondary);
+      border-radius: 4px;
+      margin-left: auto;
+      color: var(--text-muted);
+    }
+
+    .dropdown-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .control-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .field-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .custom-select {
+      width: 100%;
+      padding: 0.45rem 0.65rem;
+      font-size: 0.83rem;
+      font-family: var(--font-sans);
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s;
+      cursor: pointer;
+    }
+    .custom-select:focus {
+      border-color: var(--border-focus);
+    }
+
+    .btn-reset-map {
+      margin-top: 0.4rem;
+      padding: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 1px dashed var(--border);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .btn-reset-map:hover {
+      background: var(--accent-blue-subtle);
+      color: var(--accent-blue);
+      border-color: var(--accent-blue);
+    }
+
+    /* Center: Map Area */
+    .map-center-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      min-height: 480px;
+    }
+    .map-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 0.9rem;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .map-active-layer-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .layer-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+    .view-mode-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.22rem 0.6rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .view-mode-btn:hover, .view-mode-btn.active {
+      background: var(--accent-blue-subtle);
+      color: var(--accent-blue);
+      border-color: var(--accent-blue);
+    }
+
+    .map-stage {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      min-height: 420px;
+      overflow: hidden;
+      cursor: grab;
+      user-select: none;
+    }
+    .map-stage:active {
+      cursor: grabbing;
+    }
+
+    /* Vector Map Container SVG */
+    #centralEuropeMapSvg {
+      width: 100%;
+      height: 100%;
+      transition: transform 0.25s ease-out;
+      transform-origin: center center;
+    }
+
+    /* SVG Region styles */
+    .map-country-group {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .map-region-path {
+      stroke: #ffffff;
+      stroke-width: 1.2;
+      stroke-linejoin: round;
+      transition: fill 0.3s ease, stroke-width 0.2s, filter 0.2s;
+    }
+    [data-theme="dark"] .map-region-path {
+      stroke: #162032;
+    }
+    .map-country-group:hover .map-region-path {
+      filter: brightness(1.15) drop-shadow(0 2px 8px rgba(0,0,0,0.2));
+      stroke: #0284c7;
+      stroke-width: 2.2;
+    }
+    .map-country-group.active-selected .map-region-path {
+      stroke: #ffffff;
+      stroke-width: 2.5;
+      filter: drop-shadow(0 0 10px rgba(2, 132, 199, 0.8));
+    }
+    .map-label-text {
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 13px;
+      fill: #ffffff;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+      pointer-events: none;
+    }
+    .map-sub-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      fill: #f1f5f9;
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    /* Map Overlay Controls */
+    .map-zoom-controls {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      z-index: 10;
+    }
+    .zoom-btn {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: all 0.15s;
+    }
+    .zoom-btn:hover {
+      background: var(--bg-secondary);
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+
+    /* Map Legend Box Overlay */
+    .map-legend-overlay {
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.6rem 0.8rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      font-size: 0.72rem;
+      z-index: 10;
+      min-width: 175px;
+    }
+    .map-legend-title {
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 0.3rem;
+    }
+    .map-legend-ramp {
+      height: 8px;
+      border-radius: 4px;
+      margin-bottom: 0.25rem;
+      background: linear-gradient(to right, var(--risk-very-low), var(--risk-low), var(--risk-mod), var(--risk-high), var(--risk-very-high));
+    }
+    .map-legend-ticks {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    /* Scale Bar */
+    .map-scale-overlay {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      background: rgba(var(--bg-card), 0.8);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .scale-bar-line {
+      width: 50px;
+      height: 3px;
+      background: var(--text-muted);
+      position: relative;
+    }
+    .scale-bar-line::before, .scale-bar-line::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      width: 1px;
+      height: 7px;
+      background: var(--text-muted);
+    }
+    .scale-bar-line::after {
+      right: 0;
+    }
+
+    /* Map Tooltip */
+    .map-tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 0.45rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 100;
+      display: none;
+      transform: translate(-50%, -120%);
+      white-space: nowrap;
+    }
+
+    /* Right Panel: Selected Region Info & Mini Chart */
+    .map-info-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      border-left: 1px solid var(--border);
+      padding-left: 1.2rem;
+    }
+    .selected-region-card {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.9rem;
+    }
+    .region-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.4rem;
+    }
+    .region-id-tag {
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--accent-blue);
+      background: var(--accent-blue-subtle);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+    }
+    .risk-status-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .pill-very-low { background: #d1fae5; color: #065f46; }
+    .pill-low { background: #ecfccb; color: #3f6212; }
+    .pill-mod { background: #fef3c7; color: #92400e; }
+    .pill-high { background: #ffedd5; color: #9a3412; }
+    .pill-very-high { background: #fee2e2; color: #991b1b; }
+
+    [data-theme="dark"] .pill-very-low { background: #064e3b; color: #a7f3d0; }
+    [data-theme="dark"] .pill-low { background: #365314; color: #d9f99d; }
+    [data-theme="dark"] .pill-mod { background: #78350f; color: #fde68a; }
+    [data-theme="dark"] .pill-high { background: #7c2d12; color: #fed7aa; }
+    [data-theme="dark"] .pill-very-high { background: #7f1d1d; color: #fecaca; }
+
+    .region-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.15rem;
+    }
+    .region-coords {
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      margin-bottom: 0.8rem;
+    }
+
+    .metrics-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.85rem;
+    }
+    .metric-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.4rem 0.55rem;
+    }
+    .metric-name {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .metric-val {
+      font-size: 0.88rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+    }
+
+    .chart-panel-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .chart-title-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.4rem;
+    }
+    .chart-title-text {
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .chart-canvas-box {
+      position: relative;
+      width: 100%;
+      height: 155px;
+    }
+
+    /* Bottom 4-Column Grid */
+    .bottom-grid-section {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+    }
+    .bottom-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.3rem;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+    }
+    .card-header-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title-lg {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    /* Table Column (Col 1) */
+    .table-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .risk-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+      margin-top: 0.2rem;
+    }
+    .risk-table th {
+      text-align: right;
+      padding: 0.45rem 0.35rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+    }
+    .risk-table th:first-child {
+      text-align: left;
+    }
+    .risk-table td {
+      padding: 0.45rem 0.35rem;
+      text-align: right;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      transition: background-color 0.2s;
+    }
+    .risk-table td:first-child {
+      text-align: left;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .table-cell-val {
+      display: inline-block;
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+    }
+
+    /* Research Questions Column (Col 2) */
+    .rq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      list-style: none;
+    }
+    .rq-item {
+      display: flex;
+      gap: 0.65rem;
+      font-size: 0.81rem;
+      line-height: 1.45;
+      color: var(--text-secondary);
+    }
+    .rq-num {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent-blue-subtle);
+      color: var(--accent-blue);
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+    .rq-text strong {
+      color: var(--text-primary);
+      display: block;
+      margin-bottom: 0.1rem;
+    }
+
+    /* Outputs Column (Col 3) */
+    .outputs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .output-item {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 0.8rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .output-item:hover {
+      border-color: var(--accent-blue);
+      transform: translateX(2px);
+    }
+    .output-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.2rem;
+    }
+    .output-type {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .output-link-badge {
+      font-size: 0.68rem;
+      color: var(--accent-blue);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .output-desc {
+      font-size: 0.73rem;
+      color: var(--text-secondary);
+      line-height: 1.35;
+    }
+
+    /* SDGs Column (Col 4) */
+    .sdg-badges-row {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 1.1rem;
+      justify-content: space-between;
+    }
+    .sdg-badge {
+      flex: 1;
+      padding: 0.6rem 0.4rem;
+      border-radius: var(--radius-sm);
+      color: #ffffff;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.2rem;
+      transition: transform 0.2s;
+    }
+    .sdg-badge:hover {
+      transform: translateY(-2px);
+    }
+    .sdg-num {
+      font-size: 1.15rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .sdg-name {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      line-height: 1.15;
+    }
+    .sdg-2 { background: #d3a029; }
+    .sdg-13 { background: #3f7e44; }
+    .sdg-9 { background: #f36d25; }
+
+    .sdg-quote-box {
+      margin-top: auto;
+      background: var(--bg-primary);
+      border-left: 3px solid var(--accent-blue);
+      padding: 0.85rem;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+    .sdg-quote-text {
+      font-size: 0.78rem;
+      font-style: italic;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    /* Additional Supporting Sections for Depth & Nav Fulfillment */
+    .methodology-pipeline {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .pipeline-step-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      position: relative;
+    }
+    .step-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      background: var(--accent-blue-subtle);
+      color: var(--accent-blue);
+      border-radius: 4px;
+      margin-bottom: 0.6rem;
+    }
+    .step-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.4rem;
+    }
+    .step-text {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    /* Team Section */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .profile-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: var(--card-shadow);
+    }
+    .profile-avatar {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.7rem;
+      color: #ffffff;
+      font-weight: 700;
+      margin-bottom: 0.85rem;
+      border: 3px solid var(--bg-card);
+      box-shadow: 0 0 0 2px var(--border);
+    }
+    .profile-avatar-container {
+      position: relative;
+      width: 86px;
+      height: 86px;
+      margin-bottom: 0.85rem;
+    }
+    .profile-avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center 20%;
+      border: 3px solid var(--bg-card);
+      box-shadow: 0 0 0 2px var(--border), 0 4px 14px rgba(0, 0, 0, 0.12);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      display: block;
+    }
+    .profile-avatar-container:hover .profile-avatar-img {
+      transform: scale(1.04);
+      box-shadow: 0 0 0 2px var(--accent-blue), 0 6px 18px rgba(2, 132, 199, 0.25);
+    }
+    .profile-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.15rem;
+    }
+    .profile-role {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent-blue);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.45rem;
+    }
+    .profile-affiliation {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      line-height: 1.35;
+    }
+    .profile-socials {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: auto;
+    }
+    .social-link {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    .social-link:hover {
+      background: var(--accent-blue-subtle);
+      color: var(--accent-blue);
+      text-decoration: none;
+    }
+
+    /* Modal Styling */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .modal-backdrop.show {
+      display: flex;
+    }
+    .modal-window {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 650px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      position: relative;
+    }
+    .modal-close-btn {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+    }
+
+    /* Toast Notification */
+    .toast-message {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 0.75rem 1.25rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 500;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      z-index: 3000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .toast-message.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Footer */
+    footer.academic-footer {
+      background-color: #0b132b;
+      color: #cbd5e1;
+      border-top: 1px solid #1e293b;
+      padding: 3rem 2rem 2rem 2rem;
+      font-size: 0.83rem;
+    }
+    .footer-container {
+      max-width: 1360px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 2.5rem;
+      align-items: center;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid #1e293b;
+    }
+    .footer-left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .footer-proj-name {
+      font-weight: 800;
+      color: #ffffff;
+      font-size: 1.15rem;
+    }
+    .footer-sub {
+      color: #94a3b8;
+      font-size: 0.78rem;
+    }
+    .footer-center-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+    .footer-link {
+      color: #94a3b8;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .footer-link:hover {
+      color: #38bdf8;
+      text-decoration: none;
+    }
+    .footer-right-eu {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.85rem;
+    }
+    .footer-eu-flag {
+      width: 48px;
+      height: 32px;
+      background: #003399;
+      border-radius: 4px;
+      position: relative;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .footer-eu-text {
+      font-size: 0.72rem;
+      line-height: 1.35;
+      color: #94a3b8;
+      max-width: 250px;
+    }
+    .footer-bottom-copy {
+      max-width: 1360px;
+      margin: 1.5rem auto 0 auto;
+      text-align: center;
+      font-size: 0.73rem;
+      color: #64748b;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1180px) {
+      .map-dashboard-grid {
+        grid-template-columns: 260px 1fr;
+      }
+      .map-info-panel {
+        grid-column: span 2;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        padding-left: 0;
+        padding-top: 1.2rem;
+      }
+      .bottom-grid-section {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .methodology-pipeline {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 860px) {
+      header.sticky-header {
+        padding: 0 1rem;
+      }
+      nav.header-nav {
+        display: none;
+        position: absolute;
+        top: var(--header-h);
+        left: 0;
+        width: 100%;
+        background: var(--bg-card);
+        border-bottom: 1px solid var(--border);
+        flex-direction: column;
+        padding: 1.25rem;
+        gap: 0.75rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      }
+      nav.header-nav.mobile-open {
+        display: flex;
+      }
+      .mobile-nav-toggle {
+        display: block;
+      }
+      .hero-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      .facts-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .map-dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .map-controls-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding-right: 0;
+        padding-bottom: 1.2rem;
+      }
+      .map-info-panel {
+        grid-column: span 1;
+      }
+      .bottom-grid-section {
+        grid-template-columns: 1fr;
+      }
+      .team-grid {
+        grid-template-columns: 1fr;
+      }
+      .methodology-pipeline {
+        grid-template-columns: 1fr;
+      }
+      .footer-container {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .footer-right-eu {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .facts-grid {
+        grid-template-columns: 1fr;
+      }
+      .eu-funding-badge span {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. STICKY HEADER -->
+  <header class="sticky-header" id="mainHeader">
+    <a href="#hero" class="brand-group">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+          <path d="M2 12h20"></path>
+          <path d="m4.93 4.93 4.24 4.24"></path>
+          <path d="m14.83 14.83 4.24 4.24"></path>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">GEO-AIYLRF</div>
+        <div class="brand-subtitle">Geo-AI Yield Loss Risk Forecasting</div>
+      </div>
+    </a>
+
+    <nav class="header-nav" id="headerNav">
+      <a href="#hero" class="nav-link active">Home</a>
+      <a href="#research" class="nav-link">Research</a>
+      <a href="#methodology" class="nav-link">Methodology</a>
+      <a href="#data-maps" class="nav-link">Data &amp; Maps</a>
+      <a href="#results" class="nav-link">Results</a>
+      <a href="#publications" class="nav-link">Publications</a>
+      <a href="#team" class="nav-link">Researcher</a>
+      <a href="#team" class="nav-link">Supervisor</a>
+      <a href="#team" class="nav-link">Team</a>
+      <a href="#sdgs" class="nav-link">SDGs</a>
+      <a href="#contact" class="nav-link" onclick="openContactModal(event)">Contact</a>
+    </nav>
+
+    <div class="header-actions">
+      <!-- EU Funding Badge -->
+      <div class="eu-funding-badge" title="Funded by the European Union under Horizon Europe">
+        <div class="eu-flag-icon">
+          <div class="eu-stars-circle"></div>
+        </div>
+        <span>Funded by the EU</span>
+      </div>
+
+      <!-- Theme Switcher -->
+      <button class="theme-toggle" id="themeToggleBtn" aria-label="Toggle Dark/Light Mode" title="Toggle Theme">
+        <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+
+      <!-- Mobile Hamburger Button -->
+      <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Open Navigation Menu">
+        &#9776;
+      </button>
+    </div>
+  </header>
+
+  <!-- 2. HERO SECTION -->
+  <section class="hero-section" id="hero">
+    <div class="hero-container">
+      <div class="hero-left">
+        <div class="eyebrow-pill">
+          <span class="pulse-dot"></span>
+          PHD RESEARCH PROJECT
+        </div>
+        <h1 class="hero-title">
+          <span>GEO-AIYLRF</span>
+        </h1>
+        <p class="hero-subtitle">
+          GEO-AI forecasting of crops yield loss risk in Central Europe using remote sensing and climate data
+        </p>
+        <div class="hero-meta-line">
+          <img src="assets/sana_arshad.jpg" alt="Sana Arshad" class="hero-author-avatar">
+          <strong>Sana Arshad</strong>
+          <span class="meta-separator">&bull;</span>
+          <span>Faculty of Science, Charles University</span>
+          <span class="meta-separator">&bull;</span>
+          <span>European Union / Horizon Europe</span>
+        </div>
+        <div class="hero-cta-group">
+          <a href="#data-maps" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            Explore Project
+          </a>
+          <a href="#research" class="btn btn-secondary">
+            About the Research
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="hero-map-card">
+          <div class="hero-real-map-container" onclick="scrollToSection('data-maps')">
+            <img src="assets/central_europe_rhi_map.png" alt="Geo-AI Central Europe Yield Loss Risk Map" class="hero-real-map-img">
+            <div class="hero-map-live-badge">
+              <span class="pulse-dot"></span>
+              <span>Copernicus Sentinel-2 &bull; 10m RHI Forecast</span>
+            </div>
+            <div class="hero-map-hint">
+              <span>Interactive Map Dashboard &darr;</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. QUICK-FACTS STRIP -->
+  <div class="quick-facts-strip">
+    <div class="facts-grid">
+      <!-- Card 1 -->
+      <div class="fact-card">
+        <div class="fact-header">
+          <div class="fact-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+          </div>
+          <span class="fact-title">Study Area</span>
+        </div>
+        <div class="fact-main">Central Europe</div>
+        <div class="fact-desc">Czechia, Slovakia, Hungary, Austria at high-precision NUTS-3 district scale (116 regions).</div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="fact-card">
+        <div class="fact-header">
+          <div class="fact-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+          </div>
+          <span class="fact-title">Data Sources</span>
+        </div>
+        <div class="fact-main">Sentinel-2 &amp; Landsat</div>
+        <div class="fact-desc">Copernicus multi-spectral bands, ERA5-Land climate reanalysis, and CHIRPS rainfall.</div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="fact-card">
+        <div class="fact-header">
+          <div class="fact-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <span class="fact-title">Research Period</span>
+        </div>
+        <div class="fact-main">1990 &ndash; 2050</div>
+        <div class="fact-desc">35-year historical empirical baseline combined with CMIP6 forward scenarios (SSP1/2/5).</div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="fact-card">
+        <div class="fact-header">
+          <div class="fact-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+              <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+              <line x1="6" y1="1" x2="6" y2="4"></line>
+              <line x1="10" y1="1" x2="10" y2="4"></line>
+              <line x1="14" y1="1" x2="14" y2="4"></line>
+            </svg>
+          </div>
+          <span class="fact-title">AI Models</span>
+        </div>
+        <div class="fact-main">RF, GBDT &amp; Deep Learning</div>
+        <div class="fact-desc">Spatial Random Forest, LightGBM, and Spatio-Temporal ConvLSTM &amp; Temporal Fusion Transformers.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. INTERACTIVE MAP SECTION (3-COLUMN LAYOUT) -->
+  <section class="page-section" id="data-maps">
+    <div class="section-header-block">
+      <div class="section-eyebrow">Interactive Geo-AI Visualizer</div>
+      <h2 class="section-title">Central Europe Crop Vulnerability &amp; Risk Dashboard</h2>
+      <p class="section-desc">
+        Explore multi-decadal satellite vegetation dynamics, climatic stressors, and forecasted yield risk across NUTS-3 districts of Czechia, Slovakia, Hungary, and Austria.
+      </p>
+    </div>
+
+    <div class="map-dashboard-grid">
+      <!-- LEFT PANEL: MAP LAYERS & FILTERS -->
+      <div class="map-controls-panel">
+        <div>
+          <div class="panel-block-title">
+            <span>Map Layers</span>
+            <span style="font-size: 0.65rem; color: var(--accent-blue);">9 INDICES</span>
+          </div>
+          <div class="layer-radio-list">
+            <label class="layer-option-label">
+              <input type="radio" name="mapLayer" value="RHI" checked onchange="handleLayerChange('RHI')">
+              <span>Yield Loss Risk (RHI)</span>
+              <span class="layer-badge-tag">Risk</span>
+            </label>
+            <label class="layer-option-label">
+              <input type="radio" name="mapLayer" value="NDVI" onchange="handleLayerChange('NDVI')">
+              <span>NDVI (Veg. Index)</span>
+              <span class="layer-badge-tag">EO</span>
+            </label>
+            <label class="layer-option-label">
+              <input type="radio" name="mapLayer" value="EVI" onchange="handleLayerChange('EVI')">
+              <span>EVI (Enhanced Veg.)</span>
+              <span class="layer-badge-tag">EO</span>
+            </label>
+            <label class="layer-option-label">
+              <input type="radio" name="mapLayer" value="SAVI" onchange="handleLayerChange('SAVI')">
+              <span>SAVI (Soil-Adjusted)</span>
+              <span class="layer-badge-tag">EO</span>
+            </label>
+            <label class="layer-option-label">
+              <input type="radio" name="mapLayer" value="NDMI" onchange="handleLayerChange('NDMI')">
+              <span>NDMI (Moisture Index)</span>
+              <span class="layer-badge-tag">Moisture</span>
+            </label>
+            <label class="layer-option-label">
+              <input type="radio" name="mapLayer" value="LST" onchange="handleLayerChange('LST')">
+              <span>LST (Land Surface Temp)</span>
+              <span class="layer-badge-tag">&deg;C</span>
+            </label>
+            <label class="layer-option-label">
+              <input type="radio" name="mapLayer" value="Rainfall" onchange="handleLayerChange('Rainfall')">
+              <span>Rainfall (Precipitation)</span>
+              <span class="layer-badge-tag">mm</span>
+            </label>
+            <label class="layer-option-label">
+              <input type="radio" name="mapLayer" value="Drought" onchange="handleLayerChange('Drought')">
+              <span>Drought Index (VCI)</span>
+              <span class="layer-badge-tag">Agri</span>
+            </label>
+            <label class="layer-option-label">
+              <input type="radio" name="mapLayer" value="SPEI" onchange="handleLayerChange('SPEI')">
+              <span>SPEI (Multi-Scalar)</span>
+              <span class="layer-badge-tag">Climate</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="dropdown-group">
+          <div class="panel-block-title" style="margin-bottom: 0.2rem;">Forecast Parameters</div>
+
+          <div class="control-field">
+            <label class="field-label" for="selectYear">Observation / Projection Year</label>
+            <select id="selectYear" class="custom-select" onchange="handleParamChange()">
+              <option value="2024">2024 (Recent Baseline)</option>
+              <option value="2020">2020 (Historical)</option>
+              <option value="2015">2015 (Extreme Summer Drought)</option>
+              <option value="2010">2010 (Historical)</option>
+              <option value="2000">2000 (Historical)</option>
+              <option value="2030" selected>2030 (Short-Term Projection)</option>
+              <option value="2035">2035 (Medium-Term)</option>
+              <option value="2040">2040 (Decadal Shift)</option>
+              <option value="2050">2050 (Mid-Century Horizon)</option>
+            </select>
+          </div>
+
+          <div class="control-field">
+            <label class="field-label" for="selectCrop">Crop Commodity</label>
+            <select id="selectCrop" class="custom-select" onchange="handleParamChange()">
+              <option value="Winter Wheat" selected>Winter Wheat (Triticum aestivum)</option>
+              <option value="Maize">Grain Maize (Zea mays)</option>
+              <option value="Barley">Spring &amp; Winter Barley</option>
+              <option value="Rapeseed">Oilseed Rape (Brassica napus)</option>
+              <option value="Sunflower">Sunflower (Helianthus annuus)</option>
+            </select>
+          </div>
+
+          <div class="control-field">
+            <label class="field-label" for="selectScenario">Climate Scenario</label>
+            <select id="selectScenario" class="custom-select" onchange="handleParamChange()">
+              <option value="SSP1-2.6">SSP1-2.6 (Sustainable / Paris Target)</option>
+              <option value="SSP2-4.5" selected>SSP2-4.5 (Middle of the Road)</option>
+              <option value="SSP5-8.5">SSP5-8.5 (High Emissions / Severe Heat)</option>
+            </select>
+          </div>
+
+          <div class="control-field">
+            <label class="field-label" for="selectAdmin">Administrative Level</label>
+            <select id="selectAdmin" class="custom-select" onchange="handleParamChange()">
+              <option value="NUTS-3" selected>NUTS-3 (Districts / Okresy / Kraje)</option>
+              <option value="NUTS-2">NUTS-2 (Cohesion Regions)</option>
+              <option value="NUTS-0">NUTS-0 (National Level)</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn-reset-map" onclick="resetMapDashboard()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+          </svg>
+          Reset Map &amp; Filters
+        </button>
+      </div>
+
+      <!-- CENTER: MAP DISPLAY AREA -->
+      <div class="map-center-container">
+        <div class="map-top-bar">
+          <div class="map-active-layer-indicator">
+            <span class="layer-status-dot" id="layerDot"></span>
+            <span id="activeLayerLabel">Active Layer: Yield Loss Risk (RHI)</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <button class="view-mode-btn active" id="btnRasterToggle" onclick="toggleRasterMode()" title="Toggle Satellite AI Model Output vs Synthetic Thematic Layer">
+              <span>🛰️ Research AI Raster</span>
+            </button>
+            <div id="activeYearCropBadge" style="font-family: var(--font-mono); font-size: 0.72rem;">
+              2030 &bull; Winter Wheat &bull; SSP2-4.5
+            </div>
+          </div>
+        </div>
+
+        <div class="map-stage" id="mapStage">
+          <!-- Zoom Controls -->
+          <div class="map-zoom-controls">
+            <button class="zoom-btn" onclick="zoomMap(1.2)" title="Zoom In">+</button>
+            <button class="zoom-btn" onclick="zoomMap(0.833)" title="Zoom Out">&minus;</button>
+          </div>
+
+          <!-- Dynamic Legend Box -->
+          <div class="map-legend-overlay">
+            <div class="map-legend-title" id="mapLegendTitle">Yield Loss Risk (RHI)</div>
+            <div class="map-legend-ramp" id="mapLegendRamp"></div>
+            <div class="map-legend-ticks">
+              <span id="mapLegendMin">0.0 (Very Low)</span>
+              <span id="mapLegendMid">0.5</span>
+              <span id="mapLegendMax">1.0 (Very High)</span>
+            </div>
+          </div>
+
+          <!-- Scale Bar -->
+          <div class="map-scale-overlay">
+            <div class="scale-bar-line"></div>
+            <span>100 km</span>
+          </div>
+
+          <!-- Interactive Central Europe Vector Map SVG with Research Raster Backdrop -->
+          <svg id="centralEuropeMapSvg" viewBox="0 0 620 440" xmlns="http://www.w3.org/2000/svg">
+            <g id="mapPanZoomLayer">
+              <!-- Actual Geo-AI Research Raster Map Layer -->
+              <image id="satelliteRasterLayer" href="assets/central_europe_rhi_map.png" x="0" y="0" width="620" height="440" preserveAspectRatio="xMidYMid meet" opacity="1" style="transition: opacity 0.35s ease; border-radius: 8px;"/>
+
+              <!-- Czechia Hotspot Group -->
+              <g class="map-country-group" id="country-cz" onclick="selectRegion('CZ', 'Czechia / South Moravia', 'CZ064', 49.1951, 16.6068)">
+                <path class="map-region-path" id="path-cz" d="M140 60 L 270 40 L 335 85 L 340 160 L 250 190 L 165 170 L 130 130 Z" fill="rgba(245, 158, 11, 0.08)"/>
+                <text x="240" y="115" class="map-label-text">CZECHIA</text>
+                <text x="240" y="132" class="map-sub-label">CZ064 &bull; RHI: 0.58</text>
+              </g>
+
+              <!-- Slovakia Hotspot Group -->
+              <g class="map-country-group" id="country-sk" onclick="selectRegion('SK', 'Slovakia / Trnava-Nitra', 'SK021', 48.3775, 17.5883)">
+                <path class="map-region-path" id="path-sk" d="M340 160 L 335 85 L 530 110 L 525 200 L 400 230 L 340 190 Z" fill="rgba(249, 115, 22, 0.08)"/>
+                <text x="430" y="180" class="map-label-text">SLOVAKIA</text>
+                <text x="430" y="197" class="map-sub-label">SK021 &bull; RHI: 0.62</text>
+              </g>
+
+              <!-- Austria Hotspot Group -->
+              <g class="map-country-group active-selected" id="country-at" onclick="selectRegion('AT', 'Austria / Lower Austria (Weinviertel)', 'AT12', 48.5133, 16.2308)">
+                <path class="map-region-path" id="path-at" d="M120 200 L 250 190 L 330 215 L 330 320 L 180 340 L 100 280 Z" fill="rgba(132, 204, 22, 0.08)"/>
+                <text x="210" y="270" class="map-label-text">AUSTRIA</text>
+                <text x="210" y="287" class="map-sub-label">AT12 &bull; RHI: 0.44</text>
+              </g>
+
+              <!-- Hungary Hotspot Group -->
+              <g class="map-country-group" id="country-hu" onclick="selectRegion('HU', 'Hungary / Alföld (Great Plain)', 'HU331', 46.8500, 20.1500)">
+                <path class="map-region-path" id="path-hu" d="M330 215 L 400 230 L 525 200 L 535 320 L 430 370 L 330 340 Z" fill="rgba(239, 68, 68, 0.08)"/>
+                <text x="420" y="300" class="map-label-text">HUNGARY</text>
+                <text x="420" y="317" class="map-sub-label">HU331 &bull; RHI: 0.76</text>
+              </g>
+            </g>
+          </svg>
+
+          <!-- Floating Hover Tooltip -->
+          <div class="map-tooltip" id="mapTooltip"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL: SELECTED REGION INFO & MINI TIME-SERIES CHART -->
+      <div class="map-info-panel">
+        <div class="selected-region-card">
+          <div class="region-card-top">
+            <span class="region-id-tag" id="regionNutsCode">NUTS-3: CZ064</span>
+            <span class="risk-status-pill pill-mod" id="regionRiskPill">Moderate Risk</span>
+          </div>
+          <div class="region-name" id="regionTitle">South Moravia (Czechia)</div>
+          <div class="region-coords" id="regionCoords">49.1951&deg; N, 16.6068&deg; E &bull; Elevation: 215m</div>
+
+          <div class="metrics-2col">
+            <div class="metric-item">
+              <div class="metric-name">RHI Risk Score</div>
+              <div class="metric-val" id="metricRHI" style="color: var(--risk-mod);">0.58</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-name">NDVI Anomaly</div>
+              <div class="metric-val" id="metricNDVI">-0.14</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-name">NDMI Moisture</div>
+              <div class="metric-val" id="metricNDMI">0.28</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-name">Mean LST (&deg;C)</div>
+              <div class="metric-val" id="metricLST">27.8 &deg;C</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-name">Rainfall Deficit</div>
+              <div class="metric-val" id="metricRainfall">-42 mm</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-name">SPEI-3 Index</div>
+              <div class="metric-val" id="metricSPEI">-1.68</div>
+            </div>
+          </div>
+
+          <button class="btn btn-secondary" style="width: 100%; padding: 0.45rem; font-size: 0.78rem;" onclick="scrollToSection('results')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            View Full Time Series
+          </button>
+        </div>
+
+        <div class="chart-panel-container">
+          <div class="chart-title-bar">
+            <span class="chart-title-text">Temporal Trajectory (1990&ndash;2025)</span>
+            <span style="font-size: 0.65rem; color: var(--accent-blue); font-family: var(--font-mono);">MULTI-PARAM</span>
+          </div>
+          <div class="chart-canvas-box">
+            <canvas id="miniTimeSeriesChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. BOTTOM 4-COLUMN GRID -->
+  <section class="page-section" id="results">
+    <div class="bottom-grid-section">
+      <!-- Col 1: Future Yield Loss Risk Table -->
+      <div class="bottom-card">
+        <div class="card-header-line">
+          <div class="card-title-lg">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+              <line x1="9" y1="21" x2="9" y2="9"></line>
+            </svg>
+            Future Yield Loss Risk
+          </div>
+        </div>
+
+        <div class="table-controls">
+          <select id="tableCropSelect" class="custom-select" style="font-size: 0.75rem; padding: 0.35rem 0.5rem;" onchange="updateFutureRiskTable()">
+            <option value="wheat">Winter Wheat</option>
+            <option value="maize">Grain Maize</option>
+            <option value="barley">Barley</option>
+          </select>
+          <select id="tableScenarioSelect" class="custom-select" style="font-size: 0.75rem; padding: 0.35rem 0.5rem;" onchange="updateFutureRiskTable()">
+            <option value="ssp126">SSP1-2.6</option>
+            <option value="ssp245" selected>SSP2-4.5</option>
+            <option value="ssp585">SSP5-8.5</option>
+          </select>
+        </div>
+
+        <table class="risk-table">
+          <thead>
+            <tr>
+              <th>Country</th>
+              <th>2030</th>
+              <th>2035</th>
+              <th>2040</th>
+              <th>2050</th>
+            </tr>
+          </thead>
+          <tbody id="riskTableBody">
+            <!-- Dynamically populated via JS -->
+          </tbody>
+        </table>
+        <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 0.6rem;">
+          Values represent Relative Hazard Index (0: minimal &rarr; 1: severe crop failure). Shaded green to orange.
+        </div>
+      </div>
+
+      <!-- Col 2: Key Research Questions -->
+      <div class="bottom-card" id="research">
+        <div class="card-header-line">
+          <div class="card-title-lg">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            Key Research Questions
+          </div>
+        </div>
+
+        <ul class="rq-list">
+          <li class="rq-item">
+            <div class="rq-num">1</div>
+            <div class="rq-text">
+              <strong>Crop Health Dynamics</strong>
+              How have multi-spectral vegetation indices and phenological anomalies shifted across Central Europe since 1990?
+            </div>
+          </li>
+          <li class="rq-item">
+            <div class="rq-num">2</div>
+            <div class="rq-text">
+              <strong>Degradation Drivers</strong>
+              What are the compounding interactions between heatwaves, soil moisture deficits, and flash droughts?
+            </div>
+          </li>
+          <li class="rq-item">
+            <div class="rq-num">3</div>
+            <div class="rq-text">
+              <strong>Future Vulnerability Hotspots</strong>
+              Which NUTS-3 districts face severe yield collapse thresholds under CMIP6 SSP2-4.5 and SSP5-8.5 by 2050?
+            </div>
+          </li>
+          <li class="rq-item">
+            <div class="rq-num">4</div>
+            <div class="rq-text">
+              <strong>AI Decision Support</strong>
+              How can explainable Geo-AI models inform EU Common Agricultural Policy (CAP) adaptation strategies?
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Col 3: Research Outputs -->
+      <div class="bottom-card" id="publications">
+        <div class="card-header-line">
+          <div class="card-title-lg">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            Research Outputs
+          </div>
+        </div>
+
+        <div class="outputs-list">
+          <div class="output-item">
+            <div class="output-title-row">
+              <span class="output-type">Publications</span>
+              <a href="#modal-pub" class="output-link-badge" onclick="openPubModal(event)">View DOIs &rarr;</a>
+            </div>
+            <div class="output-desc">Peer-reviewed papers in <em>Remote Sensing of Env.</em> &amp; <em>Agri. Systems</em> on ML yield risk.</div>
+          </div>
+
+          <div class="output-item">
+            <div class="output-title-row">
+              <span class="output-type">Spatial Risk Maps</span>
+              <a href="#data-maps" class="output-link-badge">10m GeoTIFF &rarr;</a>
+            </div>
+            <div class="output-desc">High-resolution gridded harvest hazard and drought susceptibility atlases (1990&ndash;2050).</div>
+          </div>
+
+          <div class="output-item">
+            <div class="output-title-row">
+              <span class="output-type">Curated Datasets</span>
+              <a href="https://zenodo.org" target="_blank" class="output-link-badge">Zenodo &rarr;</a>
+            </div>
+            <div class="output-desc">Harmonized 35-year Copernicus Sentinel, Landsat, and ERA5-Land agricultural time series.</div>
+          </div>
+
+          <div class="output-item">
+            <div class="output-title-row">
+              <span class="output-type">Open Source Code</span>
+              <a href="https://github.com" target="_blank" class="output-link-badge">GitHub &rarr;</a>
+            </div>
+            <div class="output-desc">Geo-AI modeling framework in Python with XGBoost, ConvLSTM, and SHAP explainability.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Col 4: Sustainable Development Goals -->
+      <div class="bottom-card" id="sdgs">
+        <div class="card-header-line">
+          <div class="card-title-lg">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            SDG Alignment
+          </div>
+        </div>
+
+        <div class="sdg-badges-row">
+          <div class="sdg-badge sdg-2" title="Zero Hunger">
+            <div class="sdg-num">2</div>
+            <div class="sdg-name">Zero<br>Hunger</div>
+          </div>
+          <div class="sdg-badge sdg-13" title="Climate Action">
+            <div class="sdg-num">13</div>
+            <div class="sdg-name">Climate<br>Action</div>
+          </div>
+          <div class="sdg-badge sdg-9" title="Industry, Innovation & Infrastructure">
+            <div class="sdg-num">9</div>
+            <div class="sdg-name">Industry &amp;<br>Innov.</div>
+          </div>
+        </div>
+
+        <div class="sdg-quote-box">
+          <p class="sdg-quote-text">
+            &ldquo;Transforming reactive drought disaster response into predictive, proactive agro-climatic resilience for European agriculture through Earth Observation and explainable Geo-AI.&rdquo;
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- METHODOLOGY WORKFLOW PIPELINE SECTION -->
+  <section class="page-section" id="methodology">
+    <div class="section-header-block">
+      <div class="section-eyebrow">Analytical Framework</div>
+      <h2 class="section-title">Methodology &amp; AI Modeling Pipeline</h2>
+      <p class="section-desc">
+        End-to-end integration of petabyte-scale satellite constellations, bioclimatic reanalysis, spatio-temporal deep learning, and explainable AI.
+      </p>
+    </div>
+
+    <div class="methodology-pipeline">
+      <div class="pipeline-step-card">
+        <span class="step-badge">Stage 01</span>
+        <h3 class="step-title">Multi-Source EO Ingestion</h3>
+        <p class="step-text">
+          Cloud-masked Sentinel-2 MSI (10m) &amp; Landsat 5/7/8/9 surface reflectance cubes, harmonized with ERA5-Land 0.1&deg; gridded climate reanalysis.
+        </p>
+      </div>
+
+      <div class="pipeline-step-card">
+        <span class="step-badge">Stage 02</span>
+        <h3 class="step-title">Feature Engineering</h3>
+        <p class="step-text">
+          Computation of photosynthetic &amp; canopy water indices (NDVI, EVI, SAVI, NDMI), thermal stress (LST), and multi-scalar drought indices (SPEI-1/3/6).
+        </p>
+      </div>
+
+      <div class="pipeline-step-card">
+        <span class="step-badge">Stage 03</span>
+        <h3 class="step-title">Geo-AI Ensemble Models</h3>
+        <p class="step-text">
+          Spatial Random Forest, Gradient Boosted Trees (LightGBM/XGBoost), and Spatio-Temporal ConvLSTM neural networks tuned for yield anomaly detection.
+        </p>
+      </div>
+
+      <div class="pipeline-step-card">
+        <span class="step-badge">Stage 04</span>
+        <h3 class="step-title">Risk Synthesis &amp; XAI</h3>
+        <p class="step-text">
+          Relative Hazard Index (RHI) calculation, SHAP feature importance interpretation, and CMIP6 scenario projection up to 2050 for CAP policy support.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESEARCH TEAM & SUPERVISION -->
+  <section class="page-section" id="team">
+    <div class="section-header-block">
+      <div class="section-eyebrow">Academic Investigators</div>
+      <h2 class="section-title">Project Team &amp; Supervision</h2>
+      <p class="section-desc">
+        Conducted at the Department of Applied Geoinformatics and Cartography, Faculty of Science, Charles University in Prague.
+      </p>
+    </div>
+
+    <div class="team-grid">
+      <div class="profile-card">
+        <div class="profile-avatar-container">
+          <img src="assets/sana_arshad.jpg" alt="Sana Arshad - PhD Researcher" class="profile-avatar-img">
+        </div>
+        <h3 class="profile-name">Sana Arshad</h3>
+        <div class="profile-role">PhD Researcher &amp; Principal Investigator</div>
+        <div class="profile-affiliation">
+          Faculty of Science, Charles University, Prague<br>
+          Specialization: Remote Sensing, Geo-AI &amp; Agricultural Climatology
+        </div>
+        <div class="profile-socials">
+          <a href="#" class="social-link" onclick="triggerToast('ORCID: 0000-0002-XXXX-XXXX')">ORCID</a>
+          <a href="#" class="social-link" onclick="triggerToast('Opening Google Scholar profile...')">Scholar</a>
+          <a href="#" class="social-link" onclick="triggerToast('GitHub: @sana-arshad')">GitHub</a>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="profile-avatar" style="background: linear-gradient(135deg, #002b49, #0284c7);">SUP</div>
+        <h3 class="profile-name">Academic Supervisor</h3>
+        <div class="profile-role">Doctoral Advisor &amp; Department Chair</div>
+        <div class="profile-affiliation">
+          Department of Applied Geoinformatics &amp; Cartography<br>
+          Charles University &bull; Earth Observation Research Group
+        </div>
+        <div class="profile-socials">
+          <a href="#" class="social-link" onclick="triggerToast('Supervisor Faculty Profile linked')">Faculty Profile</a>
+          <a href="#" class="social-link" onclick="triggerToast('ResearchGate linked')">ResearchGate</a>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="profile-avatar" style="background: linear-gradient(135deg, #0f766e, #14b8a6);">COL</div>
+        <h3 class="profile-name">Collaborating Institutions</h3>
+        <div class="profile-role">Consortium &amp; Data Partners</div>
+        <div class="profile-affiliation">
+          Global Change Research Institute (CzechGlobe)<br>
+          European Environment Agency (EEA) &bull; Copernicus Agri Hub
+        </div>
+        <div class="profile-socials">
+          <a href="https://www.czechglobe.cz" target="_blank" class="social-link">CzechGlobe</a>
+          <a href="https://www.eea.europa.eu" target="_blank" class="social-link">EEA Portal</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. FOOTER -->
+  <footer class="academic-footer">
+    <div class="footer-container">
+      <div class="footer-left-col">
+        <div class="footer-proj-name">GEO-AIYLRF</div>
+        <div class="footer-sub">Geo-AI Yield Loss Risk Forecasting &bull; PhD Research Project</div>
+        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.4rem;">
+          Faculty of Science, Charles University, Albertov 6, 128 00 Prague 2, Czechia
+        </div>
+      </div>
+
+      <div class="footer-center-links">
+        <a href="#modal-privacy" class="footer-link" onclick="openPrivacyModal(event)">Privacy Policy</a>
+        <a href="#modal-disclaimer" class="footer-link" onclick="openDisclaimerModal(event)">Disclaimer</a>
+        <a href="#contact" class="footer-link" onclick="openContactModal(event)">Contact</a>
+        <a href="https://github.com" target="_blank" class="footer-link">Open Source Repository</a>
+      </div>
+
+      <div class="footer-right-eu">
+        <div class="footer-eu-flag">
+          <div class="eu-stars-circle"></div>
+        </div>
+        <div class="footer-eu-text">
+          Funded by the European Union. Views and opinions expressed are those of the author(s) only.
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom-copy">
+      &copy; 2026 Sana Arshad &bull; Charles University. Built for open academic research and climate-resilient agriculture.
+    </div>
+  </footer>
+
+  <!-- MODALS -->
+  <!-- Publication Modal -->
+  <div class="modal-backdrop" id="pubModal">
+    <div class="modal-window">
+      <button class="modal-close-btn" onclick="closeAllModals()">&times;</button>
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.6rem;">Academic Publications</h3>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.2rem;">
+        Key papers and peer-reviewed articles produced under the GEO-AIYLRF doctoral research project.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div style="background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.9rem;">
+          <div style="font-size: 0.72rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">Published &bull; 2025</div>
+          <div style="font-weight: 700; font-size: 0.95rem; margin: 0.2rem 0;">High-Resolution Geo-AI Forecasting of Central European Wheat Yield Anomalies Under Compound Summer Heat and Soil Drought</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">S. Arshad, et al. <em>Remote Sensing of Environment</em>, 308, 114192.</div>
+          <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.3rem 0.7rem;" onclick="copyToClipboard('10.1016/j.rse.2025.114192')">Copy DOI</button>
+        </div>
+
+        <div style="background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.9rem;">
+          <div style="font-size: 0.72rem; font-weight: 700; color: #10b981; text-transform: uppercase;">In Review &bull; 2026</div>
+          <div style="font-weight: 700; font-size: 0.95rem; margin: 0.2rem 0;">Mid-Century Projections of Agricultural Harvest Risk in the Pannonian and Danubian Basins Using Temporal ConvLSTM Ensembles</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">S. Arshad, et al. <em>Agricultural and Forest Meteorology</em>.</div>
+          <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.3rem 0.7rem;" onclick="triggerToast('Preprint available on arXiv / EarthArXiv')">View Preprint</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Modal -->
+  <div class="modal-backdrop" id="contactModal">
+    <div class="modal-window">
+      <button class="modal-close-btn" onclick="closeAllModals()">&times;</button>
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.6rem;">Contact Researcher</h3>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.2rem;">
+        Get in touch for academic collaboration, dataset inquiries, or research discussions.
+      </p>
+
+      <form onsubmit="handleContactSubmit(event)" style="display: flex; flex-direction: column; gap: 0.9rem;">
+        <div>
+          <label class="field-label" style="margin-bottom: 0.3rem;">Full Name</label>
+          <input type="text" required placeholder="Dr. Jane Doe" class="custom-select" style="padding: 0.55rem;">
+        </div>
+        <div>
+          <label class="field-label" style="margin-bottom: 0.3rem;">Email Address</label>
+          <input type="email" required placeholder="jane.doe@university.edu" class="custom-select" style="padding: 0.55rem;">
+        </div>
+        <div>
+          <label class="field-label" style="margin-bottom: 0.3rem;">Affiliation / Organization</label>
+          <input type="text" placeholder="Department of Geography, University of..." class="custom-select" style="padding: 0.55rem;">
+        </div>
+        <div>
+          <label class="field-label" style="margin-bottom: 0.3rem;">Inquiry / Message</label>
+          <textarea rows="4" required placeholder="I am interested in collaborating on the NUTS-3 risk forecast data..." class="custom-select" style="padding: 0.55rem; resize: vertical;"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top: 0.5rem;">Send Message</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Disclaimer Modal -->
+  <div class="modal-backdrop" id="disclaimerModal">
+    <div class="modal-window">
+      <button class="modal-close-btn" onclick="closeAllModals()">&times;</button>
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.6rem;">Academic Disclaimer &amp; Open License</h3>
+      <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; display: flex; flex-direction: column; gap: 0.8rem;">
+        <p>The datasets, machine learning models, and risk forecasts published on this portal are generated strictly for academic and scientific research within the PhD project GEO-AIYLRF at Charles University.</p>
+        <p>While models are calibrated using empirical ground-truth harvest statistics and Copernicus satellite data, future projections reflect CMIP6 climate model assumptions and should not be used as the sole basis for commercial grain market speculation or definitive insurance claims.</p>
+        <p>Data and source code are released under the Creative Commons Attribution 4.0 International (CC-BY 4.0) and MIT licenses.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Privacy Modal -->
+  <div class="modal-backdrop" id="privacyModal">
+    <div class="modal-window">
+      <button class="modal-close-btn" onclick="closeAllModals()">&times;</button>
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.6rem;">Privacy Policy</h3>
+      <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; display: flex; flex-direction: column; gap: 0.8rem;">
+        <p>This academic web page does not use tracking cookies, commercial analytics, or third-party advertising scripts.</p>
+        <p>Theme preference (light/dark) is stored locally in your browser's localStorage. Any contact inquiries submitted through this site are delivered solely to the researcher for direct academic correspondence.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-message" id="toastBox">Notification message</div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // --- Regional & Multi-temporal Data Matrix ---
+    const REGION_DATA = {
+      CZ: {
+        code: 'CZ064',
+        name: 'South Moravia (Czechia)',
+        coords: '49.1951° N, 16.6068° E',
+        baseRHI: 0.58,
+        status: 'Moderate Risk',
+        pillClass: 'pill-mod',
+        metrics: {
+          NDVI: '-0.14',
+          EVI: '0.34',
+          SAVI: '0.31',
+          NDMI: '0.28',
+          LST: '27.8 °C',
+          Rainfall: '-42 mm',
+          Drought: '38 (VCI)',
+          SPEI: '-1.68'
+        },
+        timeSeries: {
+          labels: ['1990', '1995', '2000', '2005', '2010', '2015', '2020', '2025'],
+          rhi: [0.32, 0.38, 0.45, 0.40, 0.48, 0.72, 0.55, 0.58],
+          ndvi: [0.78, 0.75, 0.71, 0.73, 0.68, 0.52, 0.65, 0.62],
+          rainfall: [560, 540, 510, 525, 480, 390, 460, 440],
+          spei: [0.4, 0.1, -0.3, 0.0, -0.6, -2.1, -0.8, -1.2]
+        }
+      },
+      SK: {
+        code: 'SK021',
+        name: 'Trnava & Nitra (Slovakia)',
+        coords: '48.3775° N, 17.5883° E',
+        baseRHI: 0.62,
+        status: 'High Risk',
+        pillClass: 'pill-high',
+        metrics: {
+          NDVI: '-0.18',
+          EVI: '0.31',
+          SAVI: '0.28',
+          NDMI: '0.22',
+          LST: '28.9 °C',
+          Rainfall: '-55 mm',
+          Drought: '32 (VCI)',
+          SPEI: '-1.85'
+        },
+        timeSeries: {
+          labels: ['1990', '1995', '2000', '2005', '2010', '2015', '2020', '2025'],
+          rhi: [0.30, 0.34, 0.42, 0.44, 0.51, 0.78, 0.59, 0.62],
+          ndvi: [0.81, 0.77, 0.73, 0.71, 0.65, 0.48, 0.63, 0.59],
+          rainfall: [580, 550, 520, 530, 470, 370, 450, 420],
+          spei: [0.6, 0.2, -0.2, -0.1, -0.7, -2.3, -0.9, -1.4]
+        }
+      },
+      AT: {
+        code: 'AT12',
+        name: 'Lower Austria / Weinviertel',
+        coords: '48.5133° N, 16.2308° E',
+        baseRHI: 0.44,
+        status: 'Low-to-Mod',
+        pillClass: 'pill-low',
+        metrics: {
+          NDVI: '-0.08',
+          EVI: '0.39',
+          SAVI: '0.35',
+          NDMI: '0.33',
+          LST: '25.6 °C',
+          Rainfall: '-28 mm',
+          Drought: '46 (VCI)',
+          SPEI: '-1.15'
+        },
+        timeSeries: {
+          labels: ['1990', '1995', '2000', '2005', '2010', '2015', '2020', '2025'],
+          rhi: [0.25, 0.28, 0.35, 0.32, 0.39, 0.58, 0.42, 0.44],
+          ndvi: [0.82, 0.80, 0.76, 0.78, 0.72, 0.61, 0.71, 0.69],
+          rainfall: [640, 620, 590, 610, 540, 440, 520, 510],
+          spei: [0.8, 0.5, 0.1, 0.3, -0.3, -1.5, -0.4, -0.8]
+        }
+      },
+      HU: {
+        code: 'HU331',
+        name: 'Alföld Great Plain (Hungary)',
+        coords: '46.8500° N, 20.1500° E',
+        baseRHI: 0.76,
+        status: 'Very High Risk',
+        pillClass: 'pill-very-high',
+        metrics: {
+          NDVI: '-0.26',
+          EVI: '0.27',
+          SAVI: '0.24',
+          NDMI: '0.18',
+          LST: '31.2 °C',
+          Rainfall: '-78 mm',
+          Drought: '24 (VCI)',
+          SPEI: '-2.42'
+        },
+        timeSeries: {
+          labels: ['1990', '1995', '2000', '2005', '2010', '2015', '2020', '2025'],
+          rhi: [0.38, 0.42, 0.54, 0.52, 0.62, 0.89, 0.72, 0.76],
+          ndvi: [0.75, 0.71, 0.65, 0.66, 0.58, 0.39, 0.54, 0.48],
+          rainfall: [520, 490, 440, 460, 410, 290, 380, 340],
+          spei: [0.2, -0.2, -0.8, -0.5, -1.2, -2.8, -1.5, -1.9]
+        }
+      }
+    };
+
+    // Layer configurations for titles, scales, color ramps
+    const LAYER_CONFIGS = {
+      RHI: {
+        label: 'Yield Loss Risk (RHI)',
+        min: '0.0 (Very Low: 0.0–0.1)',
+        mid: '0.5 (Moderate: 0.3–0.5)',
+        max: '1.0 (Very High: 0.7–1.0)',
+        ramp: 'linear-gradient(to right, #008000, #32cd32, #ffd700, #ff8c00, #dc2626)',
+        dot: '#dc2626',
+        colors: { CZ: '#f59e0b', SK: '#f97316', AT: '#84cc16', HU: '#ef4444' }
+      },
+      NDVI: {
+        label: 'NDVI (Vegetation Index)',
+        min: '0.2 (Sparse)',
+        mid: '0.5',
+        max: '0.9 (Dense)',
+        ramp: 'linear-gradient(to right, #ef4444, #f59e0b, #84cc16, #10b981, #047857)',
+        dot: '#10b981',
+        colors: { CZ: '#84cc16', SK: '#f59e0b', AT: '#10b981', HU: '#ef4444' }
+      },
+      EVI: {
+        label: 'EVI (Enhanced Veg. Index)',
+        min: '0.1',
+        mid: '0.4',
+        max: '0.8',
+        ramp: 'linear-gradient(to right, #d97706, #eab308, #22c55e, #15803d)',
+        dot: '#22c55e',
+        colors: { CZ: '#22c55e', SK: '#eab308', AT: '#15803d', HU: '#d97706' }
+      },
+      SAVI: {
+        label: 'SAVI (Soil-Adjusted Veg.)',
+        min: '0.1',
+        mid: '0.35',
+        max: '0.7',
+        ramp: 'linear-gradient(to right, #b45309, #d97706, #84cc16, #16a34a)',
+        dot: '#84cc16',
+        colors: { CZ: '#84cc16', SK: '#d97706', AT: '#16a34a', HU: '#b45309' }
+      },
+      NDMI: {
+        label: 'NDMI (Canopy Moisture)',
+        min: '-0.2 (Dry)',
+        mid: '0.2',
+        max: '0.6 (Wet)',
+        ramp: 'linear-gradient(to right, #b91c1c, #ea580c, #38bdf8, #0284c7)',
+        dot: '#0284c7',
+        colors: { CZ: '#38bdf8', SK: '#ea580c', AT: '#0284c7', HU: '#b91c1c' }
+      },
+      LST: {
+        label: 'LST (Land Surface Temp °C)',
+        min: '18 °C',
+        mid: '26 °C',
+        max: '38 °C',
+        ramp: 'linear-gradient(to right, #0284c7, #fbbf24, #f97316, #dc2626)',
+        dot: '#f97316',
+        colors: { CZ: '#fbbf24', SK: '#f97316', AT: '#0284c7', HU: '#dc2626' }
+      },
+      Rainfall: {
+        label: 'Rainfall (Precipitation mm)',
+        min: '250 mm',
+        mid: '500 mm',
+        max: '850 mm',
+        ramp: 'linear-gradient(to right, #ef4444, #fbbf24, #60a5fa, #1d4ed8)',
+        dot: '#3b82f6',
+        colors: { CZ: '#60a5fa', SK: '#fbbf24', AT: '#1d4ed8', HU: '#ef4444' }
+      },
+      Drought: {
+        label: 'Drought Index (VCI)',
+        min: '0 (Severe)',
+        mid: '50',
+        max: '100 (Optimal)',
+        ramp: 'linear-gradient(to right, #7f1d1d, #ea580c, #eab308, #22c55e)',
+        dot: '#eab308',
+        colors: { CZ: '#eab308', SK: '#ea580c', AT: '#22c55e', HU: '#7f1d1d' }
+      },
+      SPEI: {
+        label: 'SPEI (Multi-Scalar Drought)',
+        min: '-3.0 (Dry)',
+        mid: '0.0',
+        max: '+3.0 (Wet)',
+        ramp: 'linear-gradient(to right, #991b1b, #f97316, #e2e8f0, #38bdf8, #0369a1)',
+        dot: '#991b1b',
+        colors: { CZ: '#f97316', SK: '#991b1b', AT: '#38bdf8', HU: '#7f1d1d' }
+      }
+    };
+
+    let currentActiveRegion = 'CZ';
+    let currentActiveLayer = 'RHI';
+    let currentMapZoom = 1;
+    let timeSeriesChartInstance = null;
+
+    // --- Initialize on DOM Loaded ---
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      initChart();
+      updateFutureRiskTable();
+      updateMapLayerVisuals();
+      setupMobileNav();
+      setupMapInteractivity();
+    });
+
+    // --- Chart.js Time-Series Initialization ---
+    function initChart() {
+      const ctx = document.getElementById('miniTimeSeriesChart').getContext('2d');
+      const data = REGION_DATA[currentActiveRegion].timeSeries;
+
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+
+      timeSeriesChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.labels,
+          datasets: [
+            {
+              label: 'Yield Risk (RHI)',
+              data: data.rhi,
+              borderColor: '#f59e0b',
+              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              borderWidth: 2.2,
+              tension: 0.3,
+              pointRadius: 3,
+              yAxisID: 'y'
+            },
+            {
+              label: 'NDVI Anomaly',
+              data: data.ndvi,
+              borderColor: '#10b981',
+              borderWidth: 1.8,
+              borderDash: [4, 4],
+              tension: 0.3,
+              pointRadius: 2,
+              yAxisID: 'y'
+            },
+            {
+              label: 'SPEI Drought',
+              data: data.spei,
+              borderColor: '#0284c7',
+              borderWidth: 1.6,
+              tension: 0.3,
+              pointRadius: 2,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                boxWidth: 8,
+                boxHeight: 8,
+                font: { size: 9, family: 'Inter' },
+                color: textColor
+              }
+            },
+            tooltip: {
+              bodyFont: { size: 10, family: 'Inter' },
+              titleFont: { size: 11, weight: 'bold' }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: gridColor },
+              ticks: { color: textColor, font: { size: 9 } }
+            },
+            y: {
+              type: 'linear',
+              position: 'left',
+              min: 0,
+              max: 1.0,
+              grid: { color: gridColor },
+              ticks: { color: textColor, font: { size: 9 } }
+            },
+            y1: {
+              type: 'linear',
+              position: 'right',
+              min: -3,
+              max: 2,
+              grid: { drawOnChartArea: false },
+              ticks: { color: textColor, font: { size: 8 } }
+            }
+          }
+        }
+      });
+    }
+
+    // --- Update Chart with Selected Region ---
+    function updateChartData(regionKey) {
+      if (!timeSeriesChartInstance) return;
+      const data = REGION_DATA[regionKey].timeSeries;
+      timeSeriesChartInstance.data.labels = data.labels;
+      timeSeriesChartInstance.data.datasets[0].data = data.rhi;
+      timeSeriesChartInstance.data.datasets[1].data = data.ndvi;
+      timeSeriesChartInstance.data.datasets[2].data = data.spei;
+      timeSeriesChartInstance.update();
+    }
+
+    // --- Select Map Region ---
+    function selectRegion(countryCode, name, nuts, lat, lon) {
+      currentActiveRegion = countryCode;
+      const reg = REGION_DATA[countryCode];
+
+      // Update highlighted path state
+      document.querySelectorAll('.map-country-group').forEach(el => el.classList.remove('active-selected'));
+      const activeGroup = document.getElementById(`country-${countryCode.toLowerCase()}`);
+      if (activeGroup) activeGroup.classList.add('active-selected');
+
+      // Update Info Card
+      document.getElementById('regionNutsCode').textContent = `NUTS-3: ${reg.code}`;
+      document.getElementById('regionTitle').textContent = reg.name;
+      document.getElementById('regionCoords').innerHTML = `${reg.coords} &bull; Elev: ~220m`;
+
+      const pill = document.getElementById('regionRiskPill');
+      pill.textContent = reg.status;
+      pill.className = `risk-status-pill ${reg.pillClass}`;
+
+      document.getElementById('metricRHI').textContent = reg.baseRHI;
+      document.getElementById('metricNDVI').textContent = reg.metrics.NDVI;
+      document.getElementById('metricNDMI').textContent = reg.metrics.NDMI;
+      document.getElementById('metricLST').textContent = reg.metrics.LST;
+      document.getElementById('metricRainfall').textContent = reg.metrics.Rainfall;
+      document.getElementById('metricSPEI').textContent = reg.metrics.SPEI;
+
+      updateChartData(countryCode);
+      triggerToast(`Selected: ${reg.name} (${reg.code})`);
+    }
+
+    // --- Layer Radio Change Handler ---
+    function handleLayerChange(layerKey) {
+      currentActiveLayer = layerKey;
+      const config = LAYER_CONFIGS[layerKey];
+      if (!config) return;
+
+      // Update top indicator
+      document.getElementById('activeLayerLabel').textContent = `Active Layer: ${config.label}`;
+      document.getElementById('layerDot').style.backgroundColor = config.dot;
+
+      // Update legend box
+      document.getElementById('mapLegendTitle').textContent = config.label;
+      document.getElementById('mapLegendRamp').style.background = config.ramp;
+      document.getElementById('mapLegendMin').textContent = config.min;
+      document.getElementById('mapLegendMid').textContent = config.mid;
+      document.getElementById('mapLegendMax').textContent = config.max;
+
+      updateMapLayerVisuals();
+      triggerToast(`Layer switched to: ${config.label}`);
+    }
+
+    let isRasterMode = true;
+
+    function toggleRasterMode() {
+      isRasterMode = !isRasterMode;
+      const btn = document.getElementById('btnRasterToggle');
+      if (isRasterMode) {
+        if (btn) btn.classList.add('active');
+        triggerToast('Satellite Research AI Raster enabled');
+      } else {
+        if (btn) btn.classList.remove('active');
+        triggerToast('Thematic Vector mode enabled');
+      }
+      updateMapLayerVisuals();
+    }
+
+    // --- Update Colors of SVG Map based on Selected Layer ---
+    function updateMapLayerVisuals() {
+      const config = LAYER_CONFIGS[currentActiveLayer];
+      if (!config) return;
+
+      const rasterEl = document.getElementById('satelliteRasterLayer');
+      if (rasterEl) {
+        if (!isRasterMode) {
+          rasterEl.style.opacity = '0';
+        } else if (currentActiveLayer === 'RHI') {
+          rasterEl.style.opacity = '1';
+        } else {
+          rasterEl.style.opacity = '0.22';
+        }
+      }
+
+      if (currentActiveLayer === 'RHI' && isRasterMode) {
+        document.getElementById('path-cz').setAttribute('fill', 'rgba(245, 158, 11, 0.08)');
+        document.getElementById('path-sk').setAttribute('fill', 'rgba(249, 115, 22, 0.08)');
+        document.getElementById('path-at').setAttribute('fill', 'rgba(132, 204, 22, 0.08)');
+        document.getElementById('path-hu').setAttribute('fill', 'rgba(239, 68, 68, 0.08)');
+      } else {
+        const colors = config.colors;
+        document.getElementById('path-cz').setAttribute('fill', colors.CZ);
+        document.getElementById('path-sk').setAttribute('fill', colors.SK);
+        document.getElementById('path-at').setAttribute('fill', colors.AT);
+        document.getElementById('path-hu').setAttribute('fill', colors.HU);
+      }
+    }
+
+    // --- Handle Dropdown Parameter Change (Year, Crop, Scenario, Admin) ---
+    function handleParamChange() {
+      const year = document.getElementById('selectYear').value;
+      const crop = document.getElementById('selectCrop').value;
+      const scenario = document.getElementById('selectScenario').value;
+      const admin = document.getElementById('selectAdmin').value;
+
+      document.getElementById('activeYearCropBadge').textContent = `${year} • ${crop} • ${scenario} (${admin})`;
+
+      // Dynamic adjustment of values based on projection year / scenario
+      const factor = (parseInt(year) - 2024) * 0.005;
+      const scenarioMultiplier = scenario === 'SSP5-8.5' ? 1.4 : scenario === 'SSP1-2.6' ? 0.7 : 1.0;
+
+      const reg = REGION_DATA[currentActiveRegion];
+      const adjustedRHI = Math.min(0.98, Math.max(0.12, reg.baseRHI + (factor * scenarioMultiplier))).toFixed(2);
+      document.getElementById('metricRHI').textContent = adjustedRHI;
+
+      triggerToast(`Simulating: ${crop} under ${scenario} (${year})`);
+    }
+
+    // --- Reset Map & Controls ---
+    function resetMapDashboard() {
+      document.querySelector('input[name="mapLayer"][value="RHI"]').checked = true;
+      document.getElementById('selectYear').value = '2030';
+      document.getElementById('selectCrop').value = 'Winter Wheat';
+      document.getElementById('selectScenario').value = 'SSP2-4.5';
+      document.getElementById('selectAdmin').value = 'NUTS-3';
+
+      currentMapZoom = 1;
+      const panLayer = document.getElementById('mapPanZoomLayer');
+      if (panLayer) panLayer.setAttribute('transform', 'scale(1)');
+
+      handleLayerChange('RHI');
+      handleParamChange();
+      selectRegion('CZ', 'Czechia / South Moravia', 'CZ064', 49.1951, 16.6068);
+      triggerToast('Map and parameters reset to default');
+    }
+
+    // --- Map Zoom Control ---
+    function zoomMap(factor) {
+      currentMapZoom = Math.min(2.5, Math.max(0.6, currentMapZoom * factor));
+      const panLayer = document.getElementById('mapPanZoomLayer');
+      if (panLayer) {
+        panLayer.setAttribute('transform', `scale(${currentMapZoom})`);
+      }
+    }
+
+    // --- Setup Hover Tooltips on Map ---
+    function setupMapInteractivity() {
+      const tooltip = document.getElementById('mapTooltip');
+      const stage = document.getElementById('mapStage');
+
+      ['cz', 'sk', 'at', 'hu'].forEach(code => {
+        const el = document.getElementById(`country-${code}`);
+        if (!el) return;
+
+        el.addEventListener('mousemove', (e) => {
+          const rect = stage.getBoundingClientRect();
+          tooltip.style.left = `${e.clientX - rect.left}px`;
+          tooltip.style.top = `${e.clientY - rect.top}px`;
+          tooltip.style.display = 'block';
+
+          const reg = REGION_DATA[code.toUpperCase()];
+          tooltip.innerHTML = `<strong>${reg.name}</strong><br>Layer (${currentActiveLayer}): ${reg.metrics[currentActiveLayer] || reg.baseRHI}<br><span style="color:#0284c7">Click to inspect region</span>`;
+        });
+
+        el.addEventListener('mouseleave', () => {
+          tooltip.style.display = 'none';
+        });
+      });
+    }
+
+    // --- Future Yield Loss Risk Table Dynamic Population ---
+    const FUTURE_TABLE_DATA = {
+      wheat: {
+        ssp126: { CZ: ['0.48', '0.50', '0.52', '0.55'], SK: ['0.52', '0.54', '0.57', '0.59'], HU: ['0.64', '0.66', '0.69', '0.72'], AT: ['0.36', '0.38', '0.40', '0.42'] },
+        ssp245: { CZ: ['0.58', '0.62', '0.66', '0.73'], SK: ['0.62', '0.66', '0.71', '0.78'], HU: ['0.76', '0.80', '0.85', '0.91'], AT: ['0.44', '0.47', '0.52', '0.58'] },
+        ssp585: { CZ: ['0.65', '0.71', '0.79', '0.88'], SK: ['0.70', '0.77', '0.84', '0.93'], HU: ['0.82', '0.88', '0.94', '0.99'], AT: ['0.51', '0.58', '0.67', '0.76'] }
+      },
+      maize: {
+        ssp126: { CZ: ['0.52', '0.55', '0.58', '0.61'], SK: ['0.57', '0.60', '0.63', '0.66'], HU: ['0.70', '0.73', '0.77', '0.81'], AT: ['0.41', '0.43', '0.46', '0.49'] },
+        ssp245: { CZ: ['0.63', '0.68', '0.73', '0.81'], SK: ['0.68', '0.73', '0.79', '0.87'], HU: ['0.81', '0.87', '0.92', '0.97'], AT: ['0.49', '0.54', '0.60', '0.67'] },
+        ssp585: { CZ: ['0.72', '0.79', '0.87', '0.95'], SK: ['0.78', '0.85', '0.92', '0.99'], HU: ['0.89', '0.95', '0.99', '1.00'], AT: ['0.58', '0.66', '0.75', '0.84'] }
+      },
+      barley: {
+        ssp126: { CZ: ['0.42', '0.44', '0.46', '0.49'], SK: ['0.46', '0.48', '0.51', '0.54'], HU: ['0.58', '0.60', '0.63', '0.66'], AT: ['0.32', '0.34', '0.36', '0.38'] },
+        ssp245: { CZ: ['0.51', '0.55', '0.59', '0.65'], SK: ['0.55', '0.59', '0.64', '0.70'], HU: ['0.69', '0.73', '0.78', '0.84'], AT: ['0.39', '0.42', '0.47', '0.52'] },
+        ssp585: { CZ: ['0.59', '0.65', '0.72', '0.81'], SK: ['0.63', '0.70', '0.77', '0.86'], HU: ['0.76', '0.82', '0.89', '0.96'], AT: ['0.45', '0.52', '0.60', '0.69'] }
+      }
+    };
+
+    function getRiskCellShading(valStr) {
+      const v = parseFloat(valStr);
+      if (v < 0.40) return 'background: rgba(16, 185, 129, 0.18); color: #065f46;';
+      if (v < 0.55) return 'background: rgba(132, 204, 22, 0.22); color: #3f6212;';
+      if (v < 0.70) return 'background: rgba(245, 158, 11, 0.25); color: #92400e;';
+      if (v < 0.85) return 'background: rgba(249, 115, 22, 0.28); color: #9a3412;';
+      return 'background: rgba(239, 68, 68, 0.32); color: #991b1b;';
+    }
+
+    function updateFutureRiskTable() {
+      const crop = document.getElementById('tableCropSelect').value;
+      const scenario = document.getElementById('tableScenarioSelect').value;
+      const tbody = document.getElementById('riskTableBody');
+      const countryData = FUTURE_TABLE_DATA[crop][scenario];
+
+      const rows = [
+        { name: 'Czechia', vals: countryData.CZ },
+        { name: 'Slovakia', vals: countryData.SK },
+        { name: 'Hungary', vals: countryData.HU },
+        { name: 'Austria', vals: countryData.AT }
+      ];
+
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          <td><strong>${r.name}</strong></td>
+          <td><span class="table-cell-val" style="${getRiskCellShading(r.vals[0])}">${r.vals[0]}</span></td>
+          <td><span class="table-cell-val" style="${getRiskCellShading(r.vals[1])}">${r.vals[1]}</span></td>
+          <td><span class="table-cell-val" style="${getRiskCellShading(r.vals[2])}">${r.vals[2]}</span></td>
+          <td><span class="table-cell-val" style="${getRiskCellShading(r.vals[3])}">${r.vals[3]}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    // --- Theme Switcher Logic ---
+    function initTheme() {
+      const saved = localStorage.getItem('geo_ai_theme') || 'light';
+      setTheme(saved);
+
+      document.getElementById('themeToggleBtn').addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        setTheme(next);
+      });
+    }
+
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('geo_ai_theme', theme);
+
+      const icon = document.getElementById('themeIcon');
+      if (theme === 'dark') {
+        icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+      } else {
+        icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+      }
+
+      // Re-render chart for dark/light grid lines
+      if (timeSeriesChartInstance) {
+        timeSeriesChartInstance.destroy();
+        initChart();
+      }
+    }
+
+    // --- Mobile Nav Handler ---
+    function setupMobileNav() {
+      const toggle = document.getElementById('mobileNavToggle');
+      const nav = document.getElementById('headerNav');
+
+      toggle.addEventListener('click', () => {
+        nav.classList.toggle('mobile-open');
+      });
+
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+          nav.classList.remove('mobile-open');
+        });
+      });
+    }
+
+    // --- Modal Handling ---
+    function openPubModal(e) {
+      if (e) e.preventDefault();
+      document.getElementById('pubModal').classList.add('show');
+    }
+    function openContactModal(e) {
+      if (e) e.preventDefault();
+      document.getElementById('contactModal').classList.add('show');
+    }
+    function openDisclaimerModal(e) {
+      if (e) e.preventDefault();
+      document.getElementById('disclaimerModal').classList.add('show');
+    }
+    function openPrivacyModal(e) {
+      if (e) e.preventDefault();
+      document.getElementById('privacyModal').classList.add('show');
+    }
+    function closeAllModals() {
+      document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('show'));
+    }
+
+    window.addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal-backdrop')) {
+        closeAllModals();
+      }
+    });
+
+    // --- Toast & Utility Functions ---
+    function triggerToast(msg) {
+      const toast = document.getElementById('toastBox');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3200);
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        triggerToast(`Copied to clipboard: ${text}`);
+      }).catch(() => {
+        triggerToast(`DOI: ${text}`);
+      });
+    }
+
+    function handleContactSubmit(e) {
+      e.preventDefault();
+      closeAllModals();
+      triggerToast('Thank you! Your academic inquiry has been sent to Sana Arshad.');
+    }
+
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
